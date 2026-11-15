@@ -1,0 +1,17 @@
+# Repositorios de referencia locales
+reference/
+references/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
