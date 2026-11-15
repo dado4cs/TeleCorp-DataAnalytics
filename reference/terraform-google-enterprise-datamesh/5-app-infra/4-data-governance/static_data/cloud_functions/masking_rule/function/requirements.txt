@@ -1,2 +1,0 @@
-google-cloud-bigquery==3.4.2
-google-cloud-bigquery-datapolicies==0.3.0

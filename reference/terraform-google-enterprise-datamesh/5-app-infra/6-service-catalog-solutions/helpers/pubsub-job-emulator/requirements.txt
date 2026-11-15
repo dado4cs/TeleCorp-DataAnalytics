@@ -1,3 +1,0 @@
-tink[gcpkms]==1.10.0
-google-cloud-secret-manager==2.20.2
-google-cloud-pubsub==2.27.1

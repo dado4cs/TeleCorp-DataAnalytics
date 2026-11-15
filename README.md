@@ -70,17 +70,17 @@ La información proveniente de las antenas no es la única fuente que debe ser c
 
 ## 2. Requerimientos Funcionales — Módulo GCP
 
-> **Responsabilidad del Módulo GCP:** Data Engineering, Analytics e Inteligencia Artificial.
+> **Responsabilidad del Módulo GCP:** Data Engineering, Analytics, Machine Learning Predictivo e IA Generativa (Gemini).
 
 ### A. Ingesta y Almacenamiento de Datos
 
 | ID | Requerimiento | Descripción |
 | :--- | :--- | :--- |
-| **RF-GCP-01** | **Recepción de métricas de infraestructura** | El sistema deberá recibir las métricas históricas de tráfico y estados operativos de las antenas generadas por el módulo **AWS**. |
-| **RF-GCP-02** | **Recepción de información de incidencias** | El sistema deberá recibir información de las incidencias individuales y colectivas gestionadas por el módulo **Azure**, incluyendo datos agregados sobre usuarios afectados, ubicación, tipo de problema, prioridad y estado. |
-| **RF-GCP-03** | **Validación de datos recibidos** | El sistema deberá validar la estructura, integridad y consistencia de los datos recibidos, verificando los identificadores de antenas, zonas, incidencias y marcas temporales. |
-| **RF-GCP-04** | **Almacenamiento histórico** | El sistema deberá almacenar de manera persistente los registros históricos de métricas de infraestructura e incidencias para su posterior procesamiento y análisis. |
-| **RF-GCP-05** | **Integración de fuentes de información** | El sistema deberá integrar los datos provenientes de **AWS** y **Azure**, permitiendo relacionar las métricas de las antenas con las incidencias reportadas en sus respectivas zonas y periodos de tiempo. |
+| **RF-GCP-01** | **Recepción de métricas de infraestructura** | El sistema deberá recibir de forma idempotente (mediante `POST /ingest/telemetry` y `POST /ingest/events`) las métricas históricas de tráfico y cambios de estado operativo de las antenas generadas por el módulo **AWS**. |
+| **RF-GCP-02** | **Recepción de información de incidencias** | El sistema deberá recibir de forma idempotente (mediante `POST /ingest/incidents`) la información de los reportes e incidencias individuales y colectivas gestionadas por el módulo **Azure**, incluyendo datos agregados sobre usuarios afectados, zona, tipo de problema, prioridad, estado y tiempos de detección. |
+| **RF-GCP-03** | **Validación de datos recibidos** | El sistema deberá validar la estructura, integridad y consistencia de los datos recibidos contra el catálogo único de zonas/antenas y marcas temporales, enviando los registros inválidos a una tabla/cola de rechazos. |
+| **RF-GCP-04** | **Almacenamiento histórico optimizado** | El sistema deberá almacenar de manera persistente los registros históricos de métricas e incidencias en un modelo particionado por fecha y agrupado (*clustered*) por zona/antena, e incluir un histórico sintético inicial (~30 días) con patrones realistas para análisis y entrenamiento. |
+| **RF-GCP-05** | **Integración de fuentes de información** | El sistema deberá integrar los datos provenientes de **AWS** y **Azure** en un modelo unificado, permitiendo relacionar las métricas de las antenas con las incidencias reportadas en sus respectivas zonas y periodos de tiempo. |
 
 ---
 
@@ -88,25 +88,28 @@ La información proveniente de las antenas no es la única fuente que debe ser c
 
 | ID | Requerimiento | Descripción |
 | :--- | :--- | :--- |
-| **RF-GCP-06** | **Procesamiento de datos históricos** | El sistema deberá procesar, transformar y organizar los datos recibidos para facilitar su consulta y análisis. |
-| **RF-GCP-07** | **Análisis de zonas críticas** | El sistema deberá identificar las zonas geográficas con mayor concentración de incidencias y usuarios afectados. |
+| **RF-GCP-06** | **Procesamiento de datos históricos** | El sistema deberá procesar, transformar y organizar los datos recibidos para facilitar su consulta, incluyendo el cálculo de duración activa de incidentes, usuarios afectados y tiempo de detección. |
+| **RF-GCP-07** | **Análisis de zonas críticas** | El sistema deberá identificar las zonas geográficas con mayor concentración de incidencias y usuarios afectados, considerando el tipo de zona y sitios críticos. |
 | **RF-GCP-08** | **Identificación de antenas problemáticas** | El sistema deberá identificar las antenas que presentan mayor frecuencia de fallas, degradaciones del servicio y saturaciones. |
-| **RF-GCP-09** | **Identificación de problemas recurrentes** | El sistema deberá identificar los tipos de problemas más frecuentes y analizar su recurrencia a lo largo del tiempo. |
-| **RF-GCP-10** | **Análisis de correlación** | El sistema deberá analizar la relación entre las métricas operativas de las antenas y las incidencias reportadas por los usuarios, con el propósito de identificar patrones asociados a interrupciones o degradaciones del servicio. |
-| **RF-GCP-11** | **Visualización de información analítica** | El sistema deberá proporcionar una interfaz de visualización que permita consultar indicadores, gráficos y estadísticas sobre el comportamiento de la infraestructura y las incidencias. |
+| **RF-GCP-09** | **Identificación y análisis de problemas recurrentes (estructurales)** | El sistema deberá identificar los tipos de problemas más frecuentes y analizar/visualizar la recurrencia histórica de fallas por antena a lo largo del tiempo (en coordinación con la detección nocturna de eventos estructurales emitida por **AWS**). |
+| **RF-GCP-10** | **Análisis de correlación** | El sistema deberá analizar la relación entre las métricas operativas de las antenas y las incidencias reportadas por los usuarios (caída de tráfico vs. aumento de reportes y desfase temporal entre ambos). |
+| **RF-GCP-11** | **Visualización de información analítica** | El sistema deberá proporcionar dashboards (Looker Studio) que permitan consultar indicadores, gráficos y estadísticas sobre el comportamiento de la infraestructura y las incidencias. |
 | **RF-GCP-12** | **Visualización geoespacial** | El sistema deberá representar geográficamente la ubicación de las antenas y la distribución de las incidencias, permitiendo identificar zonas críticas y concentraciones de problemas. |
 
 ---
 
-### C. Inteligencia Artificial y Predicción
+### C. Inteligencia Artificial Predictiva y Generativa
 
 | ID | Requerimiento | Descripción |
 | :--- | :--- | :--- |
-| **RF-GCP-13** | **Preparación de datos para Machine Learning** | El sistema deberá preparar los datos históricos de infraestructura e incidencias para su utilización en modelos de aprendizaje automático. |
-| **RF-GCP-14** | **Entrenamiento de modelos predictivos** | El sistema deberá permitir entrenar modelos de aprendizaje automático utilizando información histórica para identificar patrones asociados a posibles fallas de las antenas. |
-| **RF-GCP-15** | **Predicción de fallas** | El sistema deberá estimar la probabilidad de que una antena presente una falla o degradación del servicio dentro de un horizonte temporal determinado. |
-| **RF-GCP-16** | **Registro de predicciones** | El sistema deberá almacenar las predicciones generadas, incluyendo la antena evaluada, probabilidad estimada de falla, estado previsto, horizonte temporal y versión del modelo utilizado. |
-| **RF-GCP-17** | **Actualización de modelos** | El sistema deberá permitir actualizar y volver a entrenar los modelos predictivos utilizando nuevos datos históricos disponibles. |
+| **RF-GCP-13** | **Preparación de datos para Machine Learning** | El sistema deberá preparar una tabla/vista reproducible de características (*features*: tendencia, volatilidad, caídas previas, saturaciones e incidencias) a partir del histórico de infraestructura e incidencias. |
+| **RF-GCP-14** | **Entrenamiento de modelos predictivos** | El sistema deberá entrenar modelos de aprendizaje automático (BigQuery ML) utilizando información histórica para identificar patrones asociados a posibles fallas o degradaciones de las antenas. |
+| **RF-GCP-15** | **Predicción periódica de fallas** | El sistema deberá ejecutar periódicamente (cada ~15 min) la estimación de probabilidad de que una antena presente una falla o degradación dentro de un horizonte temporal determinado. |
+| **RF-GCP-16** | **Registro de predicciones** | El sistema deberá almacenar cada predicción generada, incluyendo `antena_id`, `probabilidad` estimada de falla, `estado_previsto`, `horizonte` temporal, `model_version` y marca temporal. |
+| **RF-GCP-17** | **Actualización de modelos** | El sistema deberá permitir actualizar y volver a entrenar los modelos predictivos utilizando nuevos datos históricos disponibles, registrando la versión por entrenamiento. |
+| **RF-GCP-21** | **Clasificación de reportes con IA Generativa (Gemini)** | El sistema deberá exponer un servicio (`POST /ai/classify-report`) consumido por **Azure** que utilice **Gemini** sobre el texto del reporte (sin datos personales) para devolver un JSON validado con categoría normalizada, nivel de urgencia y mención de sitios críticos (hospital, colegio, industria). |
+| **RF-GCP-22** | **Resumen operativo e hipótesis de causa con IA Generativa (Gemini)** | El sistema deberá exponer un servicio (`POST /ai/summarize-incident`) consumido por **Azure** que utilice **Gemini** para generar un resumen operativo para el operador, una hipótesis de causa raíz y una acción recomendada sobre una incidencia. |
+| **RF-GCP-23** | **Control de calidad y privacidad en IA Generativa** | El sistema deberá validar el esquema JSON de salida de Gemini, aplicar tiempos de espera cortos (*timeouts*), registrar `model_version` y garantizar que ningún dato personal (documento/teléfono) sea procesado en los prompts. |
 
 ---
 
@@ -114,6 +117,6 @@ La información proveniente de las antenas no es la única fuente que debe ser c
 
 | ID | Requerimiento | Descripción |
 | :--- | :--- | :--- |
-| **RF-GCP-18** | **Exposición de predicciones** | El sistema deberá proporcionar una interfaz de comunicación para que el módulo **AWS** pueda consultar o recibir las predicciones generadas sobre sus antenas. |
-| **RF-GCP-19** | **Envío de predicciones preventivas** | El sistema deberá enviar al módulo **AWS** las predicciones que cumplan las condiciones establecidas para generar alertas preventivas. |
-| **RF-GCP-20** | **Consulta de resultados analíticos** | El sistema deberá permitir que los usuarios autorizados consulten los resultados de los análisis históricos y predictivos mediante su interfaz de visualización. |
+| **RF-GCP-18** | **Exposición de predicciones bajo demanda (Pull)** | El sistema deberá exponer el endpoint `GET /predictions` para que **AWS** (y la consola operativa) puedan consultar las predicciones vigentes por antena o zona, incluyendo probabilidad, estado previsto, horizonte y `model_version`. |
+| **RF-GCP-19** | **Envío de predicciones preventivas hacia AWS (Push)** | El sistema deberá enviar periódicamente al módulo **AWS** (`POST /predictions` con reintentos) las predicciones cuya probabilidad sea `>= 0.50`, para que **AWS** evalúe la regla de alerta preventiva (`probabilidad >= 0.70` y `horizonte <= 24 h`) y dispare su flujo en Step Functions. |
+| **RF-GCP-20** | **Consulta de resultados analíticos** | El sistema deberá permitir que los usuarios autorizados consulten los resultados de los análisis históricos y predictivos mediante su interfaz de visualización (Looker Studio). |
