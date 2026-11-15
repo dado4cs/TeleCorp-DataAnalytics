@@ -2,6 +2,9 @@
 reference/
 references/
 
+# Datos sintéticos generados localmente
+data/*.jsonl
+
 # Terraform
 .terraform/
 *.tfstate
