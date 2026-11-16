@@ -101,20 +101,22 @@ def strip_pii(text: str) -> str:
 def publish_to_pubsub_or_bq(topic_name: str, table_name: str, rows: List[Dict[str, Any]]):
     if not GCP_PROJECT_ID or not rows:
         return
-    try:
-        if topic_name:
+    if topic_name:
+        try:
             from google.cloud import pubsub_v1
             publisher = pubsub_v1.PublisherClient()
             topic_path = publisher.topic_path(GCP_PROJECT_ID, topic_name)
             for r in rows:
                 publisher.publish(topic_path, json.dumps(r).encode("utf-8"))
-        else:
-            from google.cloud import bigquery
-            bq = bigquery.Client(project=GCP_PROJECT_ID)
-            table_ref = f"{GCP_PROJECT_ID}.{BQ_DATASET}.{table_name}"
-            bq.insert_rows_json(table_ref, rows)
+        except Exception as exc:
+            logger.warning("Aviso al publicar en Pub/Sub (%s): %s", topic_name, exc)
+    try:
+        from google.cloud import bigquery
+        bq = bigquery.Client(project=GCP_PROJECT_ID)
+        table_ref = f"{GCP_PROJECT_ID}.{BQ_DATASET}.{table_name}"
+        bq.insert_rows_json(table_ref, rows)
     except Exception as exc:
-        logger.warning("Aviso al persistir en GCP (%s): %s", table_name, exc)
+        logger.warning("Aviso al persistir en BigQuery (%s): %s", table_name, exc)
 
 
 def record_rejection(endpoint: str, reason: str, raw_item: Any):

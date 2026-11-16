@@ -16,7 +16,7 @@
   "x-google-api-management": {
     "backends": {
       "cloud-run-backend": {
-        "address": "https://telecorp-analytics-api-placeholder.a.run.app",
+        "address": "https://telecorp-analytics-api-113946186456.us-central1.run.app",
         "pathTranslation": "APPEND_PATH_TO_ADDRESS",
         "deadline": 30.0
       }

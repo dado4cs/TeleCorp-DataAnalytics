@@ -341,12 +341,12 @@
     }
 
     async function testClassifyReport() {
-      const description = document.getElementById('reportText').value;
+      const text = document.getElementById('reportText').value;
       document.getElementById('geminiOutput').textContent = 'Consultando Vertex AI (Gemini)...';
       const res = await fetch('/ai/classify-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ zone_id: 'ZONA-01', description })
+        body: JSON.stringify({ report_id: 'REP-DEMO-01', text, declared_category: 'SIN_INTERNET', zone_type: 'SALUD' })
       });
       const data = await res.json();
       document.getElementById('geminiOutput').textContent = JSON.stringify(data, null, 2);
@@ -360,11 +360,11 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           incident_id: 'INC-88412',
-          zone_id: 'ZONA-01',
           incident_type: 'COLECTIVA',
-          affected_users: 48,
-          antenna_status: 'CAIDA',
-          sample_descriptions: [sample]
+          zone: { id: 'LIM-JESUSMARIA', name: 'Jesús María', type: 'SALUD' },
+          users_affected: 48,
+          antenna_evidence: [{ antenna_id: 'ANT-LIM-021', state: 'CAIDA' }],
+          report_samples: [sample]
         })
       });
       const data = await res.json();

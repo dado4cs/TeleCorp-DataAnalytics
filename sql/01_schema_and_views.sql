@@ -122,6 +122,7 @@ SELECT
   z.critical_sites,
   z.zone_lat,
   z.zone_lng,
+  CONCAT(CAST(ROUND(z.zone_lat, 6) AS STRING), ',', CAST(ROUND(z.zone_lng, 6) AS STRING)) AS zone_coords,
   COALESCE(i.total_incidents, 0) AS total_incidents,
   COALESCE(i.collective_incidents, 0) AS collective_incidents,
   COALESCE(i.total_affected_users, 0) AS total_affected_users,
